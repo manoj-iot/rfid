@@ -134,8 +134,8 @@ static void play_buzzer_beep(uint32_t duration_ms) {
 static i2c_master_dev_handle_t s_lcd_device = NULL;
 
 /* ─── Wi-Fi & NTP / Time configuration ─────────────────────────────────── */
-#define WIFI_SSID "Z6"
-#define WIFI_PASS "123456788"
+#define WIFI_SSID "SSID NAME"  // CHANGE THIS PARAMETER BEFORE FLASH
+#define WIFI_PASS "WIFI PASSWORD" // CAHNGE THIS PARAMETER BEFORE FLASH
 #define WIFI_CONNECTED_BIT BIT0
 
 static EventGroupHandle_t s_wifi_event_group;
