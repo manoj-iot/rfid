@@ -1,0 +1,223 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap');
+
+:root {
+    --bg-color: #080c16;
+    --panel-bg: rgba(16, 24, 48, 0.45);
+    --border-color: rgba(255, 255, 255, 0.06);
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --checkin-bg: rgba(16, 185, 129, 0.15);
+    --checkin-border: rgba(16, 185, 129, 0.3);
+    --checkin-text: #10b981;
+    --checkout-bg: rgba(245, 158, 11, 0.15);
+    --checkout-border: rgba(245, 158, 11, 0.3);
+    --checkout-text: #f59e0b;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    background-image:
+        radial-gradient(circle at 10% 20%, rgba(59,130,246,0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(99,102,241,0.08) 0%, transparent 40%);
+}
+
+header {
+    padding: 24px 40px;
+    border-bottom: 1px solid var(--border-color);
+    backdrop-filter: blur(12px);
+    background: rgba(8,12,22,0.6);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.logo-section h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #60a5fa 0%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+}
+
+.logo-section p { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+.status-badge {
+    display: flex; align-items: center; gap: 8px; font-size: 13px;
+    background: rgba(255,255,255,0.03); padding: 6px 16px;
+    border-radius: 20px; border: 1px solid var(--border-color);
+}
+
+.status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background-color: #10b981; box-shadow: 0 0 10px #10b981;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%   { transform: scale(0.95); opacity: 0.5; }
+    50%  { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.5; }
+}
+
+main {
+    max-width: 1400px; width: 100%; margin: 0 auto;
+    padding: 40px; display: grid;
+    grid-template-columns: 350px 1fr; gap: 40px; flex-grow: 1;
+}
+
+.sidebar { display: flex; flex-direction: column; gap: 30px; }
+
+.glass-panel {
+    background: var(--panel-bg); border: 1px solid var(--border-color);
+    border-radius: 16px; padding: 24px; backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.3);
+}
+
+.panel-title {
+    font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 600;
+    margin-bottom: 20px; display: flex; justify-content: space-between;
+    align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;
+}
+
+.stats-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+
+.stat-card {
+    background: rgba(255,255,255,0.02); border: 1px solid var(--border-color);
+    border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 4px;
+}
+
+.stat-val { font-size: 32px; font-weight: 700; font-family: 'Outfit', sans-serif; color: #60a5fa; }
+.stat-lbl { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+
+.form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+
+label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+
+input {
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border-color);
+    border-radius: 8px; padding: 10px 14px; color: var(--text-primary);
+    font-family: inherit; font-size: 14px; outline: none; transition: all 0.3s ease;
+}
+
+input:focus {
+    border-color: #60a5fa; background: rgba(255,255,255,0.08);
+    box-shadow: 0 0 10px rgba(59,130,246,0.2);
+}
+
+input[readonly] { opacity: 0.6; cursor: not-allowed; }
+
+.btn-submit {
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+    border: none; border-radius: 8px; padding: 12px; color: #fff;
+    font-family: inherit; font-weight: 600; font-size: 14px;
+    cursor: pointer; transition: opacity 0.3s ease; margin-top: 10px;
+}
+.btn-submit:hover { opacity: 0.9; }
+
+.feed-container { display: flex; flex-direction: column; gap: 24px; }
+.table-panel { flex-grow: 1; overflow-y: auto; }
+
+table { width: 100%; border-collapse: collapse; text-align: left; }
+
+th {
+    font-family: 'Outfit', sans-serif; font-size: 14px; color: var(--text-secondary);
+    font-weight: 600; padding: 16px; border-bottom: 1px solid var(--border-color);
+}
+
+td { padding: 16px; font-size: 14px; border-bottom: 1px solid var(--border-color); }
+tr:hover td { background: rgba(255,255,255,0.01); }
+
+.badge {
+    display: inline-flex; align-items: center; padding: 4px 12px;
+    border-radius: 12px; font-size: 12px; font-weight: 600; text-transform: uppercase;
+}
+.badge-checkin  { background: var(--checkin-bg);  border: 1px solid var(--checkin-border);  color: var(--checkin-text);  }
+.badge-checkout { background: var(--checkout-bg); border: 1px solid var(--checkout-border); color: var(--checkout-text); }
+.badge-uid {
+    font-family: monospace; background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-color); color: var(--text-primary); font-size: 13px;
+}
+
+.name-cell { font-weight: 600; }
+
+.btn-register-action {
+    background: rgba(99,102,241,0.15); color: #818cf8;
+    border: 1px solid rgba(99,102,241,0.3); border-radius: 4px;
+    padding: 4px 8px; font-size: 12px; cursor: pointer; transition: all 0.3s ease;
+}
+.btn-register-action:hover { background: rgba(99,102,241,0.3); color: #fff; }
+
+/* Edit button */
+.btn-edit-action {
+    background: rgba(245,158,11,0.12); color: #f59e0b;
+    border: 1px solid rgba(245,158,11,0.3); border-radius: 4px;
+    padding: 4px 10px; font-size: 12px; cursor: pointer; transition: all 0.3s ease; margin-left: 6px;
+}
+.btn-edit-action:hover { background: rgba(245,158,11,0.28); color: #fff; }
+
+@keyframes slideIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to   { transform: translateY(0);     opacity: 1; }
+}
+.new-entry { animation: slideIn 0.5s cubic-bezier(0.16,1,0.3,1) forwards; background: rgba(59,130,246,0.05); }
+
+/* ── Edit Student Modal ─────────────────── */
+.modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
+    z-index: 100; align-items: center; justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+
+.modal-box {
+    background: #0d1630; border: 1px solid rgba(99,102,241,0.35);
+    border-radius: 18px; padding: 32px; width: 420px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    animation: modalIn 0.3s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+@keyframes modalIn {
+    from { transform: translateY(30px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modal-title {
+    font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700;
+    margin-bottom: 22px; background: linear-gradient(135deg, #60a5fa, #818cf8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+.modal-actions { display: flex; gap: 12px; margin-top: 6px; }
+
+.btn-cancel {
+    flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);
+    border-radius: 8px; padding: 12px; color: var(--text-secondary);
+    font-family: inherit; font-size: 14px; cursor: pointer; transition: all 0.2s ease;
+}
+.btn-cancel:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+
+.btn-save {
+    flex: 2; background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+    border: none; border-radius: 8px; padding: 12px; color: #fff;
+    font-family: inherit; font-weight: 600; font-size: 14px;
+    cursor: pointer; transition: opacity 0.2s ease;
+}
+.btn-save:hover { opacity: 0.88; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }

@@ -1,0 +1,141 @@
+{
+    "users": {
+        "0D C2 18 06": "Manoj",
+        "0DC21806": "MANOJ",
+        "BA CD 61 16": "SHASHI"
+    },
+    "logs": [
+        {
+            "uid": "0D C2 18 06",
+            "name": "Manoj",
+            "timestamp": "2026-06-29 01:53:53 PM",
+            "type": "Check-Out"
+        },
+        {
+            "uid": "0D C2 18 06",
+            "name": "Manoj",
+            "timestamp": "2026-06-29 01:33:40 PM",
+            "type": "Check-In"
+        },
+        {
+            "uid": "0D C2 18 06",
+            "name": "Manoj",
+            "timestamp": "2026-06-29 01:33:35 PM",
+            "type": "Check-Out"
+        },
+        {
+            "uid": "0D C2 18 06",
+            "name": "Manoj",
+            "timestamp": "2026-06-29 01:33:31 PM",
+            "type": "Check-In"
+        },
+        {
+            "uid": "BA CD 61 16",
+            "name": "SHASHI",
+            "timestamp": "2026-06-29 01:29:16 PM",
+            "type": "Check-Out"
+        },
+        {
+            "uid": "BA CD 61 16",
+            "name": "SHASHI",
+            "timestamp": "2026-06-29 01:25:52 PM",
+            "type": "Check-In"
+        },
+        {
+            "uid": "0D C2 18 06",
+            "name": "Manoj",
+            "timestamp": "2026-06-29 01:25:45 PM",
+            "type": "Check-Out"
+        },
+        {
+            "uid": "0D C2 18 06",
+            "name": "Manoj",
+            "timestamp": "2026-06-29 01:25:38 PM",
+            "type": "Check-In"
+        },
+        {
+            "uid": "0D C2 18 06",
+            "name": "Manoj",
+            "timestamp": "2026-06-29 01:24:15 PM",
+            "type": "Check-Out"
+        },
+        {
+            "uid": "0D C2 18 06",
+            "name": "Manoj",
+            "timestamp": "2026-06-29 01:24:11 PM",
+            "type": "Check-In"
+        },
+        {
+            "uid": "BA CD 61 16",
+            "name": "SHASHI",
+            "timestamp": "2026-06-29 01:24:03 PM",
+            "type": "Check-Out"
+        },
+        {
+            "uid": "BA CD 61 16",
+            "name": "SHASHI",
+            "timestamp": "2026-06-29 01:21:15 PM",
+            "type": "Check-In"
+        },
+        {
+            "uid": "0D C2 18 06",
+            "name": "Manoj",
+            "timestamp": "2026-06-29 01:12:54 PM",
+            "type": "Check-Out"
+        },
+        {
+            "uid": "BA CD 61 16",
+            "name": "SHASHI",
+            "timestamp": "2026-06-29 01:12:50 PM",
+            "type": "Check-Out"
+        },
+        {
+            "uid": "BA CD 61 16",
+            "name": "SHASHI",
+            "timestamp": "2026-06-29 01:12:46 PM",
+            "type": "Check-In"
+        },
+        {
+            "uid": "0D C2 18 06",
+            "name": "Manoj",
+            "timestamp": "2026-06-29 01:12:40 PM",
+            "type": "Check-In"
+        },
+        {
+            "uid": "BA CD 61 16",
+            "name": "SHASHI",
+            "timestamp": "2026-06-29 01:11:51 PM",
+            "type": "Check-Out"
+        },
+        {
+            "uid": "BA CD 61 16",
+            "name": "SHASHI",
+            "timestamp": "2026-06-29 01:11:44 PM",
+            "type": "Check-In"
+        },
+        {
+            "uid": "0D C2 18 06",
+            "name": "Manoj",
+            "timestamp": "2026-06-29 01:11:39 PM",
+            "type": "Check-Out"
+        },
+        {
+            "uid": "0D C2 18 06",
+            "name": "Manoj",
+            "timestamp": "2026-06-29 01:11:32 PM",
+            "type": "Check-In"
+        },
+        {
+            "uid": "0D C2 18 06",
+            "name": "Manoj",
+            "timestamp": "2026-06-29 01:11:27 PM",
+            "type": "Check-Out"
+        },
+        {
+            "uid": "0D C2 18 06",
+            "name": "Manoj",
+            "timestamp": "2026-06-29 01:10:56 PM",
+            "type": "Check-In"
+        }
+    ]
+}

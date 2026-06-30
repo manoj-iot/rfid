@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Team IQ – Real-time RFID/NFC attendance tracking dashboard powered by ESP32 over Wi-Fi.">
+    <title>Team IQ — Live Attendance Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <header>
+        <div class="logo-section">
+            <h1>Team IQ</h1>
+            <p>Live NFC Attendance Tracking Dashboard</p>
+        </div>
+        <div class="status-badge">
+            <div class="status-dot"></div>
+            <span>System Active (Wi-Fi Receiver Online)</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="sidebar">
+            <!-- Analytics panel -->
+            <div class="glass-panel">
+                <div class="panel-title">Today's Activity</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-val" id="total-scans">0</span>
+                        <span class="stat-lbl">Total Scans</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-val" id="active-users">0</span>
+                        <span class="stat-lbl">Unique Members</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-val" id="current-ins" style="color: #10b981;">0</span>
+                        <span class="stat-lbl">Checked In</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Mapping panel -->
+            <div class="glass-panel">
+                <div class="panel-title">Register Card Profile</div>
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="reg-uid">Card UID</label>
+                        <input type="text" id="reg-uid" placeholder="0D C2 18 06" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-name">Employee / Student Name</label>
+                        <input type="text" id="reg-name" placeholder="John Doe" required>
+                    </div>
+                    <button type="submit" class="btn-submit" style="width: 100%;">Map Profile</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Live Scan Feed -->
+        <div class="feed-container">
+            <div class="glass-panel table-panel">
+                <div class="panel-title">Live Check-In Feed</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Member Name</th>
+                            <th>Card UID</th>
+                            <th>Time Scanned</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feed-body">
+                        <!-- Filled dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- ── Edit Student Modal ────────────────────────── -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal-box">
+            <div class="modal-title">✏️ Re-assign Card Profile</div>
+            <div class="form-group">
+                <label for="edit-uid">Card UID (read-only)</label>
+                <input type="text" id="edit-uid" readonly>
+            </div>
+            <div class="form-group">
+                <label for="edit-name">New Name</label>
+                <input type="text" id="edit-name" placeholder="Enter new student / employee name" required>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="edit-cancel">Cancel</button>
+                <button class="btn-save"   id="edit-save">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── DOM refs ──────────────────────────────────────
+        const regForm   = document.getElementById('register-form');
+        const regUid    = document.getElementById('reg-uid');
+        const regName   = document.getElementById('reg-name');
+        const statTotal = document.getElementById('total-scans');
+        const statUniq  = document.getElementById('active-users');
+        const statIns   = document.getElementById('current-ins');
+        const feedBody  = document.getElementById('feed-body');
+
+        // Edit-modal refs
+        const editModal  = document.getElementById('edit-modal');
+        const editUid    = document.getElementById('edit-uid');
+        const editName   = document.getElementById('edit-name');
+        const editCancel = document.getElementById('edit-cancel');
+        const editSave   = document.getElementById('edit-save');
+
+        let logsList = [];
+        let usersMap = {};
+
+        // ── Data init ─────────────────────────────────────
+        async function initData() {
+            try {
+                const [usersResp, logsResp] = await Promise.all([
+                    fetch('/api/users'),
+                    fetch('/api/logs')
+                ]);
+                usersMap  = await usersResp.json();
+                logsList  = await logsResp.json();
+                renderFeed();
+                updateStats();
+            } catch (err) {
+                console.error('Initialization error:', err);
+            }
+        }
+
+        // ── Build a single table row ──────────────────────
+        function buildRow(log, prepend = false) {
+            const tr = document.createElement('tr');
+            if (prepend) tr.className = 'new-entry';
+            const badgeClass = log.type === 'Check-In' ? 'badge-checkin' : 'badge-checkout';
+
+            let nameCell = `<span class="name-cell">${log.name}</span>`;
+            if (log.name === 'Unknown Profile') {
+                nameCell = `<button class="btn-register-action" onclick="quickRegister('${log.uid}')">Register Card</button>`;
+            }
+
+            // Show Edit button only for known profiles
+            const editBtn = log.name !== 'Unknown Profile'
+                ? `<button class="btn-edit-action" onclick="openEditModal('${log.uid}', '${log.name.replace(/'/g, "\\'")}')">✏ Edit</button>`
+                : '';
+
+            tr.innerHTML = `
+                <td>${nameCell}</td>
+                <td><span class="badge badge-uid">${log.uid}</span></td>
+                <td style="color: var(--text-secondary);">${log.timestamp}</td>
+                <td><span class="badge ${badgeClass}">${log.type}</span></td>
+                <td>${editBtn}</td>
+            `;
+            return tr;
+        }
+
+        // ── Render full feed ──────────────────────────────
+        function renderFeed() {
+            feedBody.innerHTML = '';
+            if (logsList.length === 0) {
+                feedBody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-secondary);padding:40px 0;">No attendance records yet. Tap a card to start!</td></tr>`;
+                return;
+            }
+            logsList.forEach(log => feedBody.appendChild(buildRow(log)));
+        }
+
+        // ── Stats ─────────────────────────────────────────
+        function updateStats() {
+            const todayStr  = new Date().toISOString().split('T')[0];
+            const todayLogs = logsList.filter(l => l.timestamp.startsWith(todayStr));
+            statTotal.innerText = todayLogs.length;
+            statUniq.innerText  = new Set(todayLogs.map(l => l.uid)).size;
+
+            const states = {};
+            [...todayLogs].reverse().forEach(l => { states[l.uid] = l.type; });
+            statIns.innerText = Object.values(states).filter(s => s === 'Check-In').length;
+        }
+
+        // ── Quick-register shortcut ───────────────────────
+        function quickRegister(uid) {
+            regUid.value = uid;
+            regName.focus();
+        }
+
+        // ── Register form submit ──────────────────────────
+        regForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const uid  = regUid.value.trim().toUpperCase();
+            const name = regName.value.trim();
+            if (!uid || !name) return;
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid, name })
+                }).then(r => r.json());
+
+                if (res.success) { regUid.value = ''; regName.value = ''; await initData(); }
+                else alert('Error: ' + res.error);
+            } catch (err) { alert('Failed to register: ' + err); }
+        });
+
+        // ── Edit modal ────────────────────────────────────
+        function openEditModal(uid, currentName) {
+            editUid.value  = uid;
+            editName.value = currentName;
+            editModal.classList.add('active');
+            setTimeout(() => editName.focus(), 100);
+        }
+
+        function closeEditModal() {
+            editModal.classList.remove('active');
+            editUid.value  = '';
+            editName.value = '';
+        }
+
+        editCancel.addEventListener('click', closeEditModal);
+        editModal.addEventListener('click', (e) => { if (e.target === editModal) closeEditModal(); });
+
+        editSave.addEventListener('click', async () => {
+            const uid      = editUid.value.trim();
+            const new_name = editName.value.trim();
+            if (!uid || !new_name) { alert('Please enter a new name.'); return; }
+
+            try {
+                const res = await fetch('/api/edit_student', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid, new_name })
+                }).then(r => r.json());
+
+                if (res.success) {
+                    closeEditModal();
+                    await initData();           // Refresh table
+                } else {
+                    alert('Error: ' + (res.error || 'Unknown error'));
+                }
+            } catch (err) {
+                alert('Failed to update student: ' + err);
+            }
+        });
+
+        // ── SSE live updates ──────────────────────────────
+        function initSSE() {
+            const source = new EventSource('/api/live-stream');
+
+            source.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.type === 'ping') return;
+
+                logsList.unshift(data);
+
+                if (logsList.length === 1) feedBody.innerHTML = '';
+                feedBody.insertBefore(buildRow(data, true), feedBody.firstChild);
+                setTimeout(() => feedBody.firstChild && feedBody.firstChild.classList.remove('new-entry'), 1000);
+                updateStats();
+            };
+
+            source.onerror = () => console.warn('SSE connection lost. Reconnecting...');
+        }
+
+        // ── Start ─────────────────────────────────────────
+        initData();
+        initSSE();
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# ESP-IDF
+build/
+sdkconfig
+sdkconfig.old
+*.elf
+*.bin
+*.map
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
