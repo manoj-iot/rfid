@@ -62,6 +62,18 @@
         <div class="feed-container">
             <div class="glass-panel table-panel">
                 <div class="panel-title">Live Check-In Feed</div>
+                
+                <!-- Date Filter Bar -->
+                <div class="filter-bar">
+                    <button class="filter-btn active" id="btn-filter-all" onclick="setFilterMode('all')">All Time</button>
+                    <button class="filter-btn" id="btn-filter-today" onclick="setFilterMode('today')">Today</button>
+                    <button class="filter-btn" id="btn-filter-yesterday" onclick="setFilterMode('yesterday')">Yesterday</button>
+                    <div class="date-picker-container">
+                        <label for="custom-date-filter" class="date-picker-label">Choose Date:</label>
+                        <input type="date" id="custom-date-filter" class="date-picker-input" onchange="setFilterMode('custom', this.value)">
+                    </div>
+                </div>
+
                 <table>
                     <thead>
                         <tr>
@@ -161,19 +173,59 @@
             return tr;
         }
 
+        let filterMode = 'all'; // 'all', 'today', 'yesterday', 'custom'
+        let customDateStr = '';
+
+        function getLocalDateString(date = new Date()) {
+            const offset = date.getTimezoneOffset();
+            const localDate = new Date(date.getTime() - (offset*60*1000));
+            return localDate.toISOString().split('T')[0];
+        }
+
+        function setFilterMode(mode, customDate = '') {
+            filterMode = mode;
+            customDateStr = customDate;
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            if (mode === 'all') document.getElementById('btn-filter-all').classList.add('active');
+            else if (mode === 'today') document.getElementById('btn-filter-today').classList.add('active');
+            else if (mode === 'yesterday') document.getElementById('btn-filter-yesterday').classList.add('active');
+            
+            if (mode !== 'custom') {
+                document.getElementById('custom-date-filter').value = '';
+            }
+            
+            renderFeed();
+        }
+
         // ── Render full feed ──────────────────────────────
         function renderFeed() {
             feedBody.innerHTML = '';
-            if (logsList.length === 0) {
-                feedBody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-secondary);padding:40px 0;">No attendance records yet. Tap a card to start!</td></tr>`;
+            
+            let filteredLogs = logsList;
+            const todayStr = getLocalDateString();
+            
+            if (filterMode === 'today') {
+                filteredLogs = logsList.filter(log => log.timestamp.startsWith(todayStr));
+            } else if (filterMode === 'yesterday') {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = getLocalDateString(yesterday);
+                filteredLogs = logsList.filter(log => log.timestamp.startsWith(yesterdayStr));
+            } else if (filterMode === 'custom' && customDateStr) {
+                filteredLogs = logsList.filter(log => log.timestamp.startsWith(customDateStr));
+            }
+            
+            if (filteredLogs.length === 0) {
+                feedBody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-secondary);padding:40px 0;">No attendance records found for this filter.</td></tr>`;
                 return;
             }
-            logsList.forEach(log => feedBody.appendChild(buildRow(log)));
+            filteredLogs.forEach(log => feedBody.appendChild(buildRow(log)));
         }
 
         // ── Stats ─────────────────────────────────────────
         function updateStats() {
-            const todayStr  = new Date().toISOString().split('T')[0];
+            const todayStr  = getLocalDateString();
             const todayLogs = logsList.filter(l => l.timestamp.startsWith(todayStr));
             statTotal.innerText = todayLogs.length;
             statUniq.innerText  = new Set(todayLogs.map(l => l.uid)).size;
@@ -257,9 +309,28 @@
 
                 logsList.unshift(data);
 
-                if (logsList.length === 1) feedBody.innerHTML = '';
-                feedBody.insertBefore(buildRow(data, true), feedBody.firstChild);
-                setTimeout(() => feedBody.firstChild && feedBody.firstChild.classList.remove('new-entry'), 1000);
+                const todayStr = getLocalDateString();
+                let matchesFilter = false;
+                if (filterMode === 'all') {
+                    matchesFilter = true;
+                } else if (filterMode === 'today') {
+                    matchesFilter = data.timestamp.startsWith(todayStr);
+                } else if (filterMode === 'yesterday') {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayStr = getLocalDateString(yesterday);
+                    matchesFilter = data.timestamp.startsWith(yesterdayStr);
+                } else if (filterMode === 'custom' && customDateStr) {
+                    matchesFilter = data.timestamp.startsWith(customDateStr);
+                }
+
+                if (matchesFilter) {
+                    if (feedBody.querySelector('td[colspan="5"]')) {
+                        feedBody.innerHTML = '';
+                    }
+                    feedBody.insertBefore(buildRow(data, true), feedBody.firstChild);
+                    setTimeout(() => feedBody.firstChild && feedBody.firstChild.classList.remove('new-entry'), 1000);
+                }
                 updateStats();
             };
 

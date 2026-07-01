@@ -13,11 +13,11 @@
 
 #include "driver/gpio.h"
 #include "driver/i2c_master.h"
-#include "driver/uart.h"
 #include "driver/ledc.h"
+#include "driver/uart.h"
+#include "esp_crt_bundle.h"
 #include "esp_event.h"
 #include "esp_http_client.h"
-#include "esp_crt_bundle.h"
 #include "esp_log.h"
 #include "esp_netif.h"
 #include "esp_netif_sntp.h"
@@ -87,8 +87,8 @@ static void trigger_http_post(const char *uid) {
 #define LCD_ADDR 0x27
 
 #define PN532_UART_PORT UART_NUM_1
-#define PN532_TX_GPIO 4 // ESP32 TX → PN532 RXD
-#define PN532_RX_GPIO 5 // ESP32 RX → PN532 TXD
+#define PN532_TX_GPIO 4 // ESP32 TX → PN532 RXD // rx 532
+#define PN532_RX_GPIO 5 // ESP32 RX → PN532 TXD //tx 532
 
 #define BUZZER_GPIO 12
 #define BUZZER_LEDC_SPEED_MODE LEDC_LOW_SPEED_MODE
@@ -101,29 +101,30 @@ static void init_buzzer_pwm(void) {
       .timer_num = BUZZER_LEDC_TIMER,
       .duty_resolution = LEDC_TIMER_13_BIT, // 13-bit duty resolution
       .freq_hz = 2700,                      // 2.7 kHz beep tone
-      .clk_cfg = LEDC_AUTO_CLK
-  };
+      .clk_cfg = LEDC_AUTO_CLK};
   ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
 
-  ledc_channel_config_t ledc_channel = {
-      .speed_mode = BUZZER_LEDC_SPEED_MODE,
-      .channel = BUZZER_LEDC_CHANNEL,
-      .timer_sel = BUZZER_LEDC_TIMER,
-      .intr_type = LEDC_INTR_DISABLE,
-      .gpio_num = BUZZER_GPIO,
-      .duty = 0,
-      .hpoint = 0
-  };
+  ledc_channel_config_t ledc_channel = {.speed_mode = BUZZER_LEDC_SPEED_MODE,
+                                        .channel = BUZZER_LEDC_CHANNEL,
+                                        .timer_sel = BUZZER_LEDC_TIMER,
+                                        .intr_type = LEDC_INTR_DISABLE,
+                                        .gpio_num = BUZZER_GPIO,
+                                        .duty = 0,
+                                        .hpoint = 0};
   ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 }
 
 static void play_buzzer_beep(uint32_t duration_ms) {
   // 50% duty cycle is 4096 out of 8192 (13-bit)
-  ESP_ERROR_CHECK(ledc_set_duty(BUZZER_LEDC_SPEED_MODE, BUZZER_LEDC_CHANNEL, 4096));
-  ESP_ERROR_CHECK(ledc_update_duty(BUZZER_LEDC_SPEED_MODE, BUZZER_LEDC_CHANNEL));
+  ESP_ERROR_CHECK(
+      ledc_set_duty(BUZZER_LEDC_SPEED_MODE, BUZZER_LEDC_CHANNEL, 4096));
+  ESP_ERROR_CHECK(
+      ledc_update_duty(BUZZER_LEDC_SPEED_MODE, BUZZER_LEDC_CHANNEL));
   vTaskDelay(pdMS_TO_TICKS(duration_ms));
-  ESP_ERROR_CHECK(ledc_set_duty(BUZZER_LEDC_SPEED_MODE, BUZZER_LEDC_CHANNEL, 0));
-  ESP_ERROR_CHECK(ledc_update_duty(BUZZER_LEDC_SPEED_MODE, BUZZER_LEDC_CHANNEL));
+  ESP_ERROR_CHECK(
+      ledc_set_duty(BUZZER_LEDC_SPEED_MODE, BUZZER_LEDC_CHANNEL, 0));
+  ESP_ERROR_CHECK(
+      ledc_update_duty(BUZZER_LEDC_SPEED_MODE, BUZZER_LEDC_CHANNEL));
 }
 
 /* ─── PN532 init retry config ─────────────────────────────────────────── */
@@ -187,10 +188,8 @@ static void wifi_init_sta(void) {
   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
   ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
   ESP_ERROR_CHECK(esp_wifi_start());
-  esp_wifi_set_max_tx_power(
-      76); // Set stable high power (19 dBm)
-  esp_wifi_set_ps(
-      WIFI_PS_NONE); // Disable power save for fast response
+  esp_wifi_set_max_tx_power(76); // Set stable high power (19 dBm)
+  esp_wifi_set_ps(WIFI_PS_NONE); // Disable power save for fast response
   ESP_LOGI(TAG, "Wi-Fi initialization finished.");
 }
 
@@ -285,7 +284,8 @@ void app_main(void) {
     lcd_put_str(s_lcd_device, "Syncing Time...");
 
     // NTP will sync in the background automatically if port 123 is open.
-    // We proceed immediately to avoid blocking device startup on mobile networks.
+    // We proceed immediately to avoid blocking device startup on mobile
+    // networks.
     lcd_clear(s_lcd_device);
     lcd_put_str(s_lcd_device, "WiFi Connected");
     lcd_set_cursor(s_lcd_device, 0, 1);
